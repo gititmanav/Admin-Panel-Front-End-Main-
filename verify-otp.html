@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP verification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .login-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+      }
+
+      .login-container input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        box-sizing: border-box;
+      }
+
+      .login-container button {
+        background-color: #5cd85a;
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .login-container .button-container {
+        display: flex;
+        justify-content: center; /* Center the button */
+        margin-top: 10px;
+      }
+
+      .login-container .button-container button {
+        background-color: #88b1e0;
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 70%; /* Adjust the width as needed */
+        transition: background-color 0.3s ease;
+      }
+      .login-container .button-container button:hover {
+        background-color: #7498ca; /* Darker color on hover */
+      }
+      .popup-container {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #5cd85a;
+        color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 10000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="popup-container" id="popupContainer">
+      OTP verified successfully! Please Wait.
+    </div>
+
+    <div class="login-container">
+      <h2>OTP verification</h2>
+      <form onsubmit="otpVerification(event)" method="post">
+        <label for="OTP">Enter the OTP received on your Email:</label>
+        <input type="number" id="OTP" name="OTP" />
+
+        <div class="button-container">
+          <button type="submit">Verify OTP</button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      let currentURL = window.location.href;
+      console.log("currentURL: ", currentURL);
+      let email = currentURL.split("?")[1];
+      console.log("email: ", email);
+      async function otpVerification(event) {
+        event.preventDefault();
+        const otp = document.getElementById("OTP").value;
+
+        try {
+          const response = await fetch("http://localhost:6969/verify-otp", {
+            method: "POST",
+            body: JSON.stringify({ otp }),
+            headers: {
+              "content-type": "application/json",
+            },
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP Error! Status: ${response.status}`);
+          } else {
+            // Show the popup
+            document.getElementById("popupContainer").style.display = "block";
+
+            // Hide the popup after 4 seconds
+            setTimeout(() => {
+              document.getElementById("popupContainer").style.display = "none";
+
+              // Redirect to changePassword.html
+              window.location.href = `http://127.0.0.1:5500/changePassword.html?${email}`;
+            }, 2000);
+          }
+        } catch (error) {
+          console.error("Fetch Error", error);
+          alert("OTP verification Failed! Please try again!");
+          window.location.href = "http://127.0.0.1:5500/forgot-password.html";
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit User</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        background-color: #f2f2f2;
+      }
+    
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+    
+      li {
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+      }
+    
+      .main-header {
+        background-color: #333;
+        color: #fff;
+        padding: 0%;
+        text-align: center;
+      }
+    
+      .main-header__item_list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center; /* Keep "Add User" centered */
+      }
+    
+      .main-header__item a {
+        text-decoration: none;
+        color: #fff;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+    
+      .main-header__item a:hover {
+        background-color: #555;
+      }
+    
+      .main-header__item.admin {
+        margin-left: auto; /* Move "Admin" to the right corner */
+      }
+    
+      form {
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+      }
+    
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+    
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+    
+      button {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+      }
+    
+      button:hover {
+        background-color: #555;
+      }
+    
+      .image-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px; /* Adjust as needed */
+      }
+    
+      #imagePreview {
+        max-width: 300px;
+        max-height: 300px;
+      }
+    </style>    
+    
+  </head>
+  <body>
+    <header class="main-header">
+      <nav class="main-header__nav">
+        <ul class="main-header__item_list">
+          <li class="main-header__item"><a href="/admin.html">Go Back</a></li>
+        </ul>
+      </nav>
+    </header>
+    
+    <form id="editUserForm" onsubmit="updateUser(event)">
+
+      <div class="image-container">
+        <img id="imagePreview" src="" alt="Image Preview" style="max-width: 300px; max-height: 300px;">
+      </div>
+    
+      <br />
+
+      <label for="firstName">First Name:</label>
+      <input
+        type="text"
+        id="firstName"
+        name="firstName"
+        autocomplete="firstName"
+      />
+
+      <br />
+
+      <label for="lastName">Last Name:</label>
+      <input
+        type="text"
+        id="lastName"
+        name="lastName"
+        autocomplete="lastName"
+      />
+
+      <br />
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" autocomplete="email" />
+
+      <br />
+
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        autocomplete="password"
+      />
+
+      <br />
+
+      <label for="profile">Profile Photo:</label>
+      <input type="file" id="profile" name="profile" accept="image/*" autocomplete="profile"/>
+
+      <br />
+
+
+      <label for="phoneNumber">Phone Number:</label>
+      <input
+        type="number"
+        id="phoneNumber"
+        name="phoneNumber"
+        pattern="[0-9]{10}"
+        placeholder="Enter 10-digit phone number"
+        autocomplete="phoneNumber"
+      />
+
+      <br />
+
+      <button  type="submit">Update</button>
+    </form>
+
+    <script>
+      // editing the details with pre-filled form
+
+async function loadUserData() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    let userId = urlParams.get("id");
+
+    const response = await axios.get(`http://localhost:6969/edit-user?id=${userId}`);
+    const user = response.data;
+    console.log('user: ', user);
+    const profileName = user.profileName;
+
+    document.getElementById("firstName").value = user.firstName;
+    document.getElementById("lastName").value = user.lastName;
+    document.getElementById("email").value = user.email;
+    document.getElementById("password").value = user.password; 
+    document.getElementById("phoneNumber").value = user.phoneNumber;
+
+    const imagePreview = document.getElementById("imagePreview");
+    const imagePath = `http://localhost:6969/src/uploads/${user.profileName}`;
+    imagePreview.src = imagePath;
+  } catch (error) {
+    console.error("Axios error:", error);
+  }
+}
+
+// Event listener for DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+  console.log('DOMContentLoaded event listner called');
+  loadUserData(); // Call the function to load user data when the window loads
+});
+
+
+// Event listener for form submission
+document.getElementById("editUserForm").addEventListener("submit", (event) => {
+    event.preventDefault(); // Prevent the default form submission
+    updateUser(event); // Call the function to update user data
+});
+
+
+// Function to update user data
+async function updateUser(event) {
+  try {
+    console.log('Update User funtion called');
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get("id");
+    console.log('userId: ', userId);
+
+    let formData = new FormData();
+    formData.append('firstName', document.getElementById("firstName").value);
+    formData.append('lastName', document.getElementById("lastName").value);
+    formData.append('email', document.getElementById("email").value);
+    formData.append('password', document.getElementById("password").value);
+    formData.append('profile', document.getElementById("profile").files[0]);
+    formData.append('phoneNumber', document.getElementById("phoneNumber").value);
+
+    const response = await axios.put(`http://localhost:6969/update-user?id=${userId}`, formData);
+    console.log('Response:', response);
+    window.location.href = `http://127.0.0.1:5500/admin.html`;
+  } catch (error) {
+    console.error('Axios error:', error);
+
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up the request:', error.message);
+    }
+  }
+}
+
+    </script>
+  </body>
+</html>

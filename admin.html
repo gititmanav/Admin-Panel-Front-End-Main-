@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        background-color: #f2f2f2;
+      }
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        background-color: #fff;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+      }
+      button {
+        background-color: #626569; /* Google Blue color, adjust as needed */
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #2d2f32;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+
+      p {
+        text-align: center;
+        color: #333;
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      li {
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+      }
+
+      .main-header {
+        background-color: #333;
+        color: #fff;
+        padding: 0%;
+        text-align: center;
+      }
+
+      .main-header__item_list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      .main-header__item a {
+        text-decoration: none;
+        color: #fff;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+
+      .main-header__item a:hover {
+        background-color: #555;
+      }
+      /* /////////////////////////////////////////////////////// */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+        position: relative;
+      }
+
+      th {
+        background-color: #333;
+        color: #fff;
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      .action-buttons {
+        display: none;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-60%);
+        right: 10px;
+      }
+
+      tr:hover .action-buttons {
+        display: block;
+      }
+
+      .action-buttons button {
+        padding: 5px 10px;
+        background-color: #555;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 5px;
+        display: block;
+      }
+
+      .action-buttons button:hover {
+        background-color: #333;
+      }
+      /* ////////////////////////////////////////////////////////// */
+      #logout_button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+
+      #logout_button a {
+        text-decoration: none;
+        color: #fff;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+
+      #logout_button a:hover {
+        background-color: red; /* Change to the desired red color */
+        color: #fff;
+      }
+      .success-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #4caf50; /* Green background color */
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="main-header">
+      <nav class="main-header__nav">
+        <ul class="main-header__item_list">
+          <li class="main-header__item"><a href="/admin.html">Admin</a></li>
+          <li class="main-header__item"></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="success-popup" id="successPopup">User deleted successfully! Please Wait.</div>
+
+    <div id="logout_button">
+      <a href="/admin.html" onclick="logOut()">Logout</a>
+    </div>
+    <div class="container">
+      <h1>Admin Panel</h1>
+      <p>(Hover to Edit or Delete)</p>
+      <button onclick="addUser()">Add - User</button>
+      <button onclick="downloadPDF()">Download PDF</button>
+      <ul id="userList"></ul>
+    </div>
+
+    <script>
+      // Function to show the success popup
+      function showSuccessPopup(userId) {
+        const successPopup = document.getElementById("successPopup");
+        successPopup.style.display = "block";
+        setTimeout(() => {
+          successPopup.style.display = "none";
+          window.location.href = `http://127.0.0.1:5500/admin.html?id=${userId}`;
+        }, 2000); // Disappear after 2 seconds
+      }
+      const fetchData = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          console.log("token: ", token);
+
+          if (token) {
+            const response = await fetch("http://localhost:6969/admin", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Admin data:", data);
+              return data;
+              // Handle the retrieved data as needed
+            } else if (response.status === 401) {
+              // Unauthorized (token verification failed)
+              console.error("Token verification failed. Redirecting to login.");
+              window.location.href = "http://127.0.0.1:5500/login.html";
+            } else {
+              // Other HTTP errors
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+          } else {
+            // Token doesn't exist, redirect to login
+            console.error("Token not found. Redirecting to login.");
+            window.location.href = "http://127.0.0.1:5500/login.html";
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error.message);
+        }
+      };
+
+      const downloadPDF = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch("http://localhost:6969/downloadPDF", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            // If the response is successful, download the PDF
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "userList.pdf";
+            a.click();
+            window.URL.revokeObjectURL(url);
+          } else {
+            console.error("Failed to download PDF");
+          }
+        } catch (error) {
+          console.error("Error downloading PDF:", error.message);
+        }
+      };
+
+      function logOut() {
+        localStorage.removeItem("token");
+        location.reload();
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const users = await fetchData();
+          const table = document.createElement("table");
+          table.innerHTML = `
+                    <thead>
+                      <tr>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  `;
+          const tbody = table.querySelector("tbody");
+
+          users.forEach((user) => {
+            console.log('user: ', user);
+            const row = document.createElement("tr");
+
+            // Populate table cells with user data
+            row.innerHTML = `
+                      <td>${user.firstName} ${user.lastName}<div class="action-buttons">
+                        <button onclick="editUser('${user.userId}')">Edit Details</button>
+                        <button onclick="deleteUser('${user.userId}')">Delete User</button>
+                      </div></td>
+                      <td>${user.email}</td>
+                      <td>${user.phoneNumber}</td>
+                    `;
+
+            // Attach event listeners for hover effect
+            row.addEventListener("mouseenter", () => {
+              row.style.backgroundColor = "#f0f0f0";
+            });
+
+            row.addEventListener("mouseleave", () => {
+              row.style.backgroundColor = "";
+            });
+
+            tbody.appendChild(row);
+          });
+
+          const userList = document.getElementById("userList");
+          userList.appendChild(table);
+        } catch {
+          (error) => console.error("Error fetching users:", error);
+        }
+      });
+
+      function addUser() {
+        // Adding a new user
+        window.location.href = "http://127.0.0.1:5500/sign-up.html";
+      }
+
+      function editUser(userId) {
+        console.log('userId: ', userId);
+        // Editing the user here (redirecting to edit-user.html)
+        console.log(`Edit user with ID ${userId}`);
+        window.location.href = `http://127.0.0.1:5500/edit-user.html?id=${userId}`;
+      }
+
+      ////////////////////////////// deleted successfully popup
+
+      async function deleteUser(userId) {
+        try {
+          const response = await fetch(
+            `http://localhost:6969/delete-user?id=${userId}`,
+            {
+              method: "DELETE",
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Failed to delete user: ${response.status}`);
+          }
+          console.log(`User with ID ${userId} has been deleted successfully.`);
+
+          showSuccessPopup(userId); // Call the function to show the success popup
+        } catch (error) {
+          console.error("Error deleting user:", error.message);
+        }
+      }
+    </script>
+  </body>
+</html>
