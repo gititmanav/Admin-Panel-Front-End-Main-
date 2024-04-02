@@ -12,6 +12,7 @@
         box-sizing: border-box;
         background-color: #f2f2f2;
       }
+
       .container {
         max-width: 800px;
         margin: 20px auto;
@@ -21,6 +22,7 @@
         border-radius: 5px;
         text-align: center;
       }
+
       button {
         background-color: #626569; /* Google Blue color, adjust as needed */
         color: #fff;
@@ -35,6 +37,7 @@
       button:hover {
         background-color: #2d2f32;
       }
+
       h1 {
         text-align: center;
         color: #333;
@@ -85,6 +88,7 @@
       .main-header__item a:hover {
         background-color: #555;
       }
+
       /* /////////////////////////////////////////////////////// */
       table {
         width: 100%;
@@ -109,33 +113,6 @@
         background-color: #f5f5f5;
       }
 
-      .action-buttons {
-        display: none;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-60%);
-        right: 10px;
-      }
-
-      tr:hover .action-buttons {
-        display: block;
-      }
-
-      .action-buttons button {
-        padding: 5px 10px;
-        background-color: #555;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-bottom: 5px;
-        display: block;
-      }
-
-      .action-buttons button:hover {
-        background-color: #333;
-      }
-      /* ////////////////////////////////////////////////////////// */
       #logout_button {
         position: absolute;
         top: 10px;
@@ -155,6 +132,7 @@
         background-color: red; /* Change to the desired red color */
         color: #fff;
       }
+
       .success-popup {
         display: none;
         position: fixed;
@@ -166,6 +144,57 @@
         padding: 15px;
         border-radius: 5px;
         z-index: 1;
+      }
+
+      /* Dropdown button */
+      .dropbtn {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+      }
+
+      /* Dropdown button on hover & focus */
+      .dropbtn:hover,
+      .dropbtn:focus {
+        background-color: #3e8e41;
+      }
+
+      /* Dropdown content (hidden by default) */
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+
+      /* Links inside the dropdown */
+      .dropdown-content button {
+        color: black;
+        background-color: #a8aeb5;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+      }
+
+      /* Change color of dropdown links on hover */
+      .dropdown-content button:hover {
+        background-color: #58ac5b;
+      }
+
+      /* Show the dropdown menu on hover */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* Change the background color of the dropdown button when the dropdown content is shown */
+      .dropdown:hover .dropbtn {
+        background-color: #6ab86d;
       }
     </style>
   </head>
@@ -179,10 +208,12 @@
       </nav>
     </header>
 
-    <div class="success-popup" id="successPopup">User deleted successfully! Please Wait.</div>
+    <div class="success-popup" id="successPopup">
+      User deleted successfully! Please Wait.
+    </div>
 
     <div id="logout_button">
-      <a href="/admin.html" onclick="logOut()">Logout</a>
+      <a href="/login.html" onclick="logOut()">Logout</a>
     </div>
     <div class="container">
       <h1>Admin Panel</h1>
@@ -202,6 +233,7 @@
           window.location.href = `http://127.0.0.1:5500/admin.html?id=${userId}`;
         }, 2000); // Disappear after 2 seconds
       }
+
       const fetchData = async () => {
         try {
           const token = localStorage.getItem("token");
@@ -273,30 +305,38 @@
           const users = await fetchData();
           const table = document.createElement("table");
           table.innerHTML = `
-                    <thead>
-                      <tr>
+                <thead>
+                    <tr>
                         <th>Full Name</th>
                         <th>Email</th>
                         <th>Phone</th>
-                      </tr>
-                    </thead>
-                    <tbody></tbody>
-                  `;
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
           const tbody = table.querySelector("tbody");
 
           users.forEach((user) => {
-            console.log('user: ', user);
+            console.log("user: ", user);
             const row = document.createElement("tr");
 
             // Populate table cells with user data
             row.innerHTML = `
-                      <td>${user.firstName} ${user.lastName}<div class="action-buttons">
-                        <button onclick="editUser('${user.userId}')">Edit Details</button>
-                        <button onclick="deleteUser('${user.userId}')">Delete User</button>
-                      </div></td>
-                      <td>${user.email}</td>
-                      <td>${user.phoneNumber}</td>
-                    `;
+                    <td>${user.firstName} ${user.lastName}
+                        <div class="action-buttons">
+                            <div class="dropdown">
+                                <button class="dropbtn">Actions</button>
+                                <div class="dropdown-content">
+                                    <button onclick="editUser('${user.userId}')">Edit Details</button>
+                                    <button onclick="deleteUser('${user.userId}')">Delete User</button>
+                                    <button onclick="workReport('${user.userId}')">Work Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td>${user.phoneNumber}</td>
+                `;
 
             // Attach event listeners for hover effect
             row.addEventListener("mouseenter", () => {
@@ -323,10 +363,17 @@
       }
 
       function editUser(userId) {
-        console.log('userId: ', userId);
+        console.log("userId: ", userId);
         // Editing the user here (redirecting to edit-user.html)
         console.log(`Edit user with ID ${userId}`);
         window.location.href = `http://127.0.0.1:5500/edit-user.html?id=${userId}`;
+      }
+
+      function workReport(userId) {
+        console.log("userId: ", userId);
+        // Editing the user here (redirecting to edit-user.html)
+        console.log(`Work report of user with ID ${userId}`);
+        window.location.href = `http://127.0.0.1:5500/workReport.html?id=${userId}`;
       }
 
       ////////////////////////////// deleted successfully popup
@@ -349,6 +396,11 @@
         } catch (error) {
           console.error("Error deleting user:", error.message);
         }
+      }
+
+      function generateWorkReport(userId) {
+        console.log("Generate work report for user:", userId);
+        // Handle generating work report for the user here
       }
     </script>
   </body>

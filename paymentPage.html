@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Become an Admin!</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background-color: #f2f2f2;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: #fff;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      border-radius: 5px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    strong {
+      margin-right: 10px;
+    }
+
+    .main-header {
+      background-color: #333;
+      color: #fff;
+      padding: 0%;
+      text-align: center;
+    }
+
+    .main-header__item_list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .main-header__item a {
+      text-decoration: none;
+      color: #fff;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .main-header__item a:hover {
+      background-color: #555;
+    }
+
+    #logout_button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    #logout_button a {
+      text-decoration: none;
+      color: #fff;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    #logout_button a:hover {
+      background-color: red; /* Change to the desired red color */
+      color: #fff;
+    }
+
+    .user-form {
+      margin-top: 20px;
+    }
+
+    .user-form input[type="text"],
+    .user-form input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    .user-form input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .user-form input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+    .success-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4caf50; /* Green background color */
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      z-index: 1;
+    }
+  </style>
+  <body>
+    <header class="main-header">
+      <nav class="main-header__nav">
+        <ul class="main-header__item_list">
+          <li class="main-header__item">
+            <a href="/all-users.html">Go Back</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div id="logout_button">
+      <a href="/admin.html" onclick="logOut()">Logout</a>
+    </div>
+
+    <div class="success-popup" id="successPopup">
+      You are now an admin! Please wait while we redirect to Login page.
+    </div>
+
+    <div class="container">
+      <h1>ADMIN Registration</h1>
+      <p>
+        (By paying just 250 Rupees, become an ADMIN yourself and get access to
+        all the features of our application!)
+      </p>
+
+      <div class="user-form">
+        <h2>Enter Your Details</h2>
+        <form id="paymentForm" action="/submit-user-details" method="POST">
+          <input
+            type="text"
+            name="name"
+            id="name"
+            placeholder="Your Name"
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Your Email"
+            required
+          />
+          <button id="rzp-button1">Pay with Razorpay</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Function to show a popup box with a message
+      function showSuccessPopup() {
+        const successPopup = document.getElementById("successPopup");
+        successPopup.style.display = "block";
+        setTimeout(() => {
+          successPopup.style.display = "none";
+          localStorage.removeItem("token");
+          window.location.href = "http://127.0.0.1:5500/login.html";
+        }, 2000); 
+      }
+
+      var orderId;
+
+      $("form").submit(async function (event) {
+        event.preventDefault();
+
+        const name = document.getElementById("name").value;
+        console.log("name: ", name);
+        const email = document.getElementById("email").value;
+        console.log("email: ", email);
+
+        var data = {
+          amount: "25000",
+          name: name,
+          email: email,
+        };
+
+        const response = await fetch("http://localhost:6969/create-orderId", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        try {
+          let responseData = await response.json();
+          orderId = responseData.orderId;
+          console.log("orderId:", orderId);
+          $("button").show();
+        } catch (error) {
+          console.error("Error:", error);
+        }
+
+        document.getElementById("rzp-button1").onclick = async function (e) {
+          try {
+            console.log("Entered the 2nd function!!!!!!!!!!!!!!!!!!!");
+            console.log("OrderID in 2nd function", orderId);
+            console.log(email);
+            var options = {
+              key: "rzp_test_akDax8VZ2OgUZr",
+              amount: "25000",
+              currency: "INR",
+              name: "Admin Panel",
+              description: "Test Transaction",
+              orderId: orderId,
+              handler: async function (response) {
+                // Extract orderId from the response object
+                console.log("response:", response);
+                console.log(
+                  "response.razorpay_payment_id: ",
+                  response.razorpay_payment_id
+                );
+
+                // Make API call to the endpoint for payment verification
+                const verificationResponse = await fetch(
+                  "http://localhost:6969/verify-payment",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ response, orderId, email }), // Pass orderId in the body
+                  }
+                );
+
+                const verificationData = await verificationResponse.json();
+                console.log("Payment verification response:", verificationData);
+
+                showSuccessPopup();
+              },
+            };
+
+            var rzp1 = new Razorpay(options);
+            rzp1.on("payment.failed", function (response) {
+              alert(response.error.code);
+              alert(response.error.description);
+              alert(response.error.source);
+              alert(response.error.step);
+              alert(response.error.reason);
+              alert(response.error.metadata.order_id);
+              alert(response.error.metadata.payment_id);
+            });
+            rzp1.open();
+            e.preventDefault();
+          } catch (error) {
+            console.error("Error while handling payment:", error);
+          }
+        };
+      });
+    </script>
+  </body>
+</html>

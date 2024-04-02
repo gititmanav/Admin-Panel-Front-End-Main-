@@ -189,7 +189,7 @@
           if (decodedToken && decodedToken.roleName === "admin" && getToken) {
             window.location.href = "http://127.0.0.1:5500/admin.html";
           } else if (decodedToken && decodedToken.roleName === "user" && getToken) {
-            window.location.href = "http://127.0.0.1:5500/all-users.html";
+            window.location.href = `http://127.0.0.1:5500/all-users.html?${email}`;
           } else {
             console.error("Invalid role in the token!");
             window.location.href = "http://127.0.0.1:5500/login.html";
@@ -198,7 +198,7 @@
           // Increase the login attempt count
           loginAttempts++;
 
-          if (loginAttempts >= 3) {
+          if (loginAttempts > 3) {
             // If login attempts exceed a threshold, show a custom message with red background
             showCustomPopup(
               "Too many failed login attempts. Your account is temporarily locked."
